@@ -28,6 +28,8 @@ public class MultiplePedestriansAndRobot {
         double MAX_ACCEL = 1.0;
         double MAX_VEL = 1.0;
 
+        final double threshold = 2.0;
+
         //Instantiate a trajectory envelope coordinator.
         //The TrajectoryEnvelopeCoordinatorSimulation implementation provides
         // -- the factory method getNewTracker() which returns a trajectory envelope tracker
@@ -37,10 +39,31 @@ public class MultiplePedestriansAndRobot {
         tec.addComparator(new Comparator<RobotAtCriticalSection>() {
             @Override
             public int compare(RobotAtCriticalSection o1, RobotAtCriticalSection o2) {
+                int returnValue = 1;
                 CriticalSection cs = o1.getCriticalSection();
                 RobotReport robotReport1 = o1.getTrajectoryEnvelopeTracker().getRobotReport();
                 RobotReport robotReport2 = o2.getTrajectoryEnvelopeTracker().getRobotReport();
-                return ((cs.getTe1Start() - robotReport1.getPathIndex()) - (cs.getTe2Start() - robotReport2.getPathIndex()));
+
+                if((cs.getTe1Start() - robotReport1.getPathIndex()) < threshold && (cs.getTe2Start() - robotReport2.getPathIndex()) < threshold) {
+
+                    // If o2 is Human, he passes first.
+                    if (tec.isUncontrollable(o2.getTrajectoryEnvelopeTracker().getTrajectoryEnvelope().getRobotID())) {
+                        returnValue = 1;
+                    }
+
+                    // If o1 is Human, he passes first.
+                    else if (tec.isUncontrollable(o1.getTrajectoryEnvelopeTracker().getTrajectoryEnvelope().getRobotID())) {
+                        returnValue = -1;
+                    }
+
+                    else
+                        returnValue = ((cs.getTe1Start() - robotReport1.getPathIndex()) - (cs.getTe2Start() - robotReport2.getPathIndex()));
+                }
+
+                // If both are robots. We don't need it now, but for the sake of future prosperity...
+                else { returnValue = ((cs.getTe1Start() - robotReport1.getPathIndex()) - (cs.getTe2Start() - robotReport2.getPathIndex())); }
+
+                return returnValue;
             }
         });
         tec.addComparator(new Comparator<RobotAtCriticalSection>() {
@@ -97,14 +120,14 @@ public class MultiplePedestriansAndRobot {
         for (int i = 0; i < nums_primitive.length; i++) {
             nums_primitive[i] = nums.get(i).intValue();
         }
-        //RVizVisualization.writeRVizConfigFile(nums_primitive);
+        RVizVisualization.writeRVizConfigFile(nums_primitive);
         //BrowserVisualization viz = new BrowserVisualization();
         //viz.setInitialTransform(39, -1.8, 1.4);
         tec.setVisualization(viz);
 
         for (int i = 0; i < nums.size(); i++) {
 
-            // Two robots. Others behave as pedestrians.
+            // One robot. Others behave as pedestrians.
             if (nums.get(i) != 1729) {
                 tec.setFootprint(nums.get(i), pedestrianFootprint);
                 tec.addUncontrollableRobots(nums.get(i));

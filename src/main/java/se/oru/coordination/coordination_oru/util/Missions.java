@@ -810,16 +810,16 @@ public class Missions {
 					PoseSteering ps = null;
 					if (oneline.length == 4) {
 					ps = new PoseSteering(
-							new Double(oneline[0]).doubleValue(),
-							new Double(oneline[1]).doubleValue(),
-							new Double(oneline[2]).doubleValue(),
-							new Double(oneline[3]).doubleValue());
+							Double.parseDouble(oneline[0]),
+							Double.parseDouble(oneline[1]),
+							Double.parseDouble(oneline[2]),
+							Double.parseDouble(oneline[3]));
 					}
 					else {
 						ps = new PoseSteering(
-								new Double(oneline[0]).doubleValue(),
-								new Double(oneline[1]).doubleValue(),
-								new Double(oneline[2]).doubleValue(),
+								Double.parseDouble(oneline[0]),
+								Double.parseDouble(oneline[1]),
+								Double.parseDouble(oneline[2]),
 								0.0);					
 					}
 					ret.add(ps);

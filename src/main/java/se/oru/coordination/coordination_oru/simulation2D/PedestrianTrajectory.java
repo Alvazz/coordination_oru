@@ -156,7 +156,7 @@ public class PedestrianTrajectory {
                     vs.add(thisV);
 
                     speeds.add(Math.sqrt(thisU * thisU + thisV * thisV));
-                    timeStamps.add(new Double(oneline[5]));
+                    timeStamps.add(Double.parseDouble(oneline[5]));
                 } else {
                     ColorPrint.error("Error reading a line from " + fileName + ". Line did not contain 5 elements. Skipping line.");
                 }
