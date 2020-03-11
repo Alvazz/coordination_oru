@@ -13,6 +13,7 @@ import se.oru.coordination.coordination_oru.CriticalSection;
 import se.oru.coordination.coordination_oru.Mission;
 import se.oru.coordination.coordination_oru.RobotAtCriticalSection;
 import se.oru.coordination.coordination_oru.RobotReport;
+import se.oru.coordination.coordination_oru.TrackingCallback;
 import se.oru.coordination.coordination_oru.demo.DemoDescription;
 import se.oru.coordination.coordination_oru.simulation2D.PedestrianForwardModel;
 import se.oru.coordination.coordination_oru.simulation2D.PedestrianTrajectory;
@@ -98,7 +99,7 @@ public class MultiplePedestriansAndRobot {
         //Need to setup infrastructure that maintains the representation
         tec.setupSolver(0, 100000000);
 
-        ArrayList<Integer> nums = new ArrayList<>();
+        ArrayList<Integer> nums = new ArrayList<Integer>();
         String pedestrianPathDir = "pedsim_testing_1-1";
         // Filter names
         FilenameFilter matchingNameFilter = new FilenameFilter() {
@@ -124,7 +125,7 @@ public class MultiplePedestriansAndRobot {
         //BrowserVisualization viz = new BrowserVisualization();
         //viz.setInitialTransform(39, -1.8, 1.4);
         tec.setVisualization(viz);
-
+        
         for (int i = 0; i < nums.size(); i++) {
 
             // One robot. Others behave as pedestrians.
@@ -146,6 +147,46 @@ public class MultiplePedestriansAndRobot {
                 Mission m1 = new Mission(nums.get(i), robotPath);
                 tec.addMissions(m1);
             }
+            
+            // Add a tracking callback for each ID
+            tec.addTrackingCallback(nums.get(i), new TrackingCallback() {
+				
+				@Override
+				public void onTrackingStart() {
+					// TODO Auto-generated method stub
+					
+				}
+				
+				@Override
+				public void onTrackingFinished() {
+					// TODO Auto-generated method stub
+					
+				}
+				
+				@Override
+				public String[] onPositionUpdate() {
+					// TODO Auto-generated method stub
+					return null;
+				}
+				
+				@Override
+				public void onNewGroundEnvelope() {
+					// TODO Auto-generated method stub
+					
+				}
+				
+				@Override
+				public void beforeTrackingStart() {
+					// TODO Auto-generated method stub
+					
+				}
+				
+				@Override
+				public void beforeTrackingFinished() {
+					// TODO Auto-generated method stub
+					
+				}
+			});
 
             Thread.sleep(200);
         }
@@ -153,4 +194,5 @@ public class MultiplePedestriansAndRobot {
         tec.computeCriticalSections();
         tec.startTrackingAddedMissions();
     }
+    
 }
