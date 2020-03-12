@@ -199,7 +199,6 @@ public class TrajectoryEnvelopeTrackerPedestrian extends AbstractTrajectoryEnvel
 					//set state to final position, just in case it didn't quite get there (it's certainly close enough)
 					this.currentPose = this.pedestrianTraj.getPoses().get(this.pedestrianTraj.getPoses().size()-1);
 					onPositionUpdate();
-					ColorPrint.info("Tracking stops now.");
 					break;
 				}
 
@@ -208,7 +207,6 @@ public class TrajectoryEnvelopeTrackerPedestrian extends AbstractTrajectoryEnvel
 					metaCSPLogger.info("At critical point (" + te.getComponent() + "): " + criticalPoint + " (" + getRobotReport().getPathIndex() + ")");
 					atCP = true;
 				}
-				ColorPrint.positive("WAS OK");
 				skipIntegration = true;
 			}
 

@@ -18,6 +18,7 @@ import se.oru.coordination.coordination_oru.demo.DemoDescription;
 import se.oru.coordination.coordination_oru.simulation2D.PedestrianForwardModel;
 import se.oru.coordination.coordination_oru.simulation2D.PedestrianTrajectory;
 import se.oru.coordination.coordination_oru.simulation2D.TrajectoryEnvelopeCoordinatorSimulationWithPedestrians;
+import se.oru.coordination.coordination_oru.util.ColorPrint;
 import se.oru.coordination.coordination_oru.util.Missions;
 import se.oru.coordination.coordination_oru.util.RVizVisualization;
 
@@ -149,18 +150,18 @@ public class MultiplePedestriansAndRobot {
             }
             
             // Add a tracking callback for each ID
+            int finalI = i;
             tec.addTrackingCallback(nums.get(i), new TrackingCallback() {
 				
 				@Override
 				public void onTrackingStart() {
 					// TODO Auto-generated method stub
-					
 				}
 				
 				@Override
 				public void onTrackingFinished() {
 					// TODO Auto-generated method stub
-					
+					ColorPrint.positive("Waiting time for robot " + nums.get(finalI) + ": " + tec.getRobotStoppageTime(nums.get(finalI)));
 				}
 				
 				@Override
