@@ -100,7 +100,7 @@ public class MultiplePedestriansAndRobot {
         //Need to setup infrastructure that maintains the representation
         tec.setupSolver(0, 100000000);
 
-        ArrayList<Integer> nums = new ArrayList<Integer>();
+        final ArrayList<Integer> nums = new ArrayList<Integer>();
         String pedestrianPathDir = "pedsim_testing_1-1";
         // Filter names
         FilenameFilter matchingNameFilter = new FilenameFilter() {
@@ -150,7 +150,7 @@ public class MultiplePedestriansAndRobot {
             }
             
             // Add a tracking callback for each ID
-            int finalI = i;
+            final int finalI = i;
             tec.addTrackingCallback(nums.get(i), new TrackingCallback() {
 				
 				@Override
