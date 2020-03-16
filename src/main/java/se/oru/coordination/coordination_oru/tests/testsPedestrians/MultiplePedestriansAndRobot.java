@@ -101,7 +101,7 @@ public class MultiplePedestriansAndRobot {
         tec.setupSolver(0, 100000000);
 
         final ArrayList<Integer> nums = new ArrayList<Integer>();
-        String pedestrianPathDir = "pedsim_testing_1-1";
+        String pedestrianPathDir = "atc-1";
         // Filter names
         FilenameFilter matchingNameFilter = new FilenameFilter() {
             @Override
@@ -117,7 +117,7 @@ public class MultiplePedestriansAndRobot {
 
         //JTSDrawingPanelVisualization viz = new JTSDrawingPanelVisualization();
         RVizVisualization viz = new RVizVisualization();
-        viz.setMap("maps/pedsim_office.yaml");
+        viz.setMap("maps/atc.yaml");
         int[] nums_primitive = new int[nums.size()];
         for (int i = 0; i < nums_primitive.length; i++) {
             nums_primitive[i] = nums.get(i).intValue();
@@ -143,7 +143,7 @@ public class MultiplePedestriansAndRobot {
             } else {
                 tec.setFootprint(nums.get(i), f1, f2, f3, f4);
                 tec.setForwardModel(nums.get(i), new ConstantAccelerationForwardModel(MAX_ACCEL, MAX_VEL, tec.getTrackingPeriod(), tec.getTemporalResolution()));
-                PoseSteering[] robotPath = Missions.loadPathFromFile(pedestrianPathDir + "/person1729.txt");
+                PoseSteering[] robotPath = Missions.loadPathFromFile(pedestrianPathDir + "/CLiFF-map_noup_0.path");
                 tec.placeRobot(nums.get(i), robotPath[0].getPose());
                 Mission m1 = new Mission(nums.get(i), robotPath);
                 tec.addMissions(m1);
