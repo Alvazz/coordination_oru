@@ -806,7 +806,7 @@ public class Missions {
 			while (in.hasNextLine()) {
 				String line = in.nextLine().trim();
 				if (line.length() != 0) {
-					String[] oneline = line.split(" |\t");
+					String[] oneline = line.split(", |\t");
 					PoseSteering ps = null;
 					if (oneline.length == 4) {
 					ps = new PoseSteering(

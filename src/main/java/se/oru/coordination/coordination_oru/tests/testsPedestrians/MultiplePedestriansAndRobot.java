@@ -19,6 +19,7 @@ import se.oru.coordination.coordination_oru.simulation2D.PedestrianForwardModel;
 import se.oru.coordination.coordination_oru.simulation2D.PedestrianTrajectory;
 import se.oru.coordination.coordination_oru.simulation2D.TrajectoryEnvelopeCoordinatorSimulationWithPedestrians;
 import se.oru.coordination.coordination_oru.util.ColorPrint;
+import se.oru.coordination.coordination_oru.util.JTSDrawingPanelVisualization;
 import se.oru.coordination.coordination_oru.util.Missions;
 import se.oru.coordination.coordination_oru.util.RVizVisualization;
 
@@ -115,6 +116,9 @@ public class MultiplePedestriansAndRobot {
             nums.add(Integer.parseInt(f.getName().split("person")[1].split(".txt")[0]));
         }
 
+        // Add robot
+        nums.add(1729);
+
         //JTSDrawingPanelVisualization viz = new JTSDrawingPanelVisualization();
         RVizVisualization viz = new RVizVisualization();
         viz.setMap("maps/atc.yaml");
@@ -172,7 +176,7 @@ public class MultiplePedestriansAndRobot {
 					// TODO Auto-generated method stub
 					
 					//FPA
-					System.out.println("There are now " + tec.getCurrentCriticalSections().size() + " critical sections");
+					//System.out.println("There are now " + tec.getCurrentCriticalSections().size() + " critical sections");
 					
 					return null;
 				}
