@@ -162,11 +162,18 @@ public class MultiplePedestriansAndRobot {
 				public void onTrackingFinished() {
 					// TODO Auto-generated method stub
 					ColorPrint.positive("Waiting time for robot " + nums.get(finalI) + ": " + tec.getRobotStoppageTime(nums.get(finalI)));
+					
+					//FPA
+					System.out.println("Does Robot" + nums.get(finalI) + " have more missions? " + Missions.hasMissions(nums.get(finalI)));
 				}
 				
 				@Override
 				public String[] onPositionUpdate() {
 					// TODO Auto-generated method stub
+					
+					//FPA
+					System.out.println("There are now " + tec.getCurrentCriticalSections().size() + " critical sections");
+					
 					return null;
 				}
 				

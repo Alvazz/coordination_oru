@@ -134,6 +134,10 @@ public abstract class TrajectoryEnvelopeCoordinator {
 	
 	protected HashSet<Integer> uncontrollableRobots = new HashSet<Integer>();
 
+
+	public ArrayList<CriticalSection> getCurrentCriticalSections() {
+		return this.allCriticalSections;
+	}
 	
 	public void addUncontrollableRobots(int ... robotIDs) {
 		for (int i : robotIDs) this.uncontrollableRobots.add(i);
