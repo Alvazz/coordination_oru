@@ -32,7 +32,7 @@ public class MultiplePedestriansAndRobot {
 
         double MAX_ACCEL = 1.0;
         double MAX_VEL = 1.0;
-        String pathFileName = new String("OnlyPedestrians");
+        String pathFileName = "CLiFF-map__upstream_14";
 
         final double threshold = 2.0;
 
@@ -120,7 +120,7 @@ public class MultiplePedestriansAndRobot {
         }
 
         // Add robot
-        // nums.add(1729);
+        nums.add(1729);
 
         //JTSDrawingPanelVisualization viz = new JTSDrawingPanelVisualization();
         RVizVisualization viz = new RVizVisualization();

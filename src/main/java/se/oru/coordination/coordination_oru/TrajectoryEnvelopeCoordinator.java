@@ -1229,9 +1229,6 @@ public abstract class TrajectoryEnvelopeCoordinator {
 						(this.isUncontrollable(cs.getTe1().getRobotID()) && this.isUncontrollable(cs.getTe2().getRobotID()))) {
 					toRemove.add(cs);
 					metaCSPLogger.finest("Obsolete critical section\n\t" + cs);
-					if(this.isUncontrollable(cs.getTe1().getRobotID()) && this.isUncontrollable(cs.getTe2().getRobotID())) {
-						ColorPrint.positive("Removing obsolete critical section between two pedestrians\n");
-					}
 					continue;
 				}
 
