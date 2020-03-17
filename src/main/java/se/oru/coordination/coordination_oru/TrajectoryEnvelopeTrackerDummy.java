@@ -40,6 +40,9 @@ public abstract class TrajectoryEnvelopeTrackerDummy extends AbstractTrajectoryE
 
 	@Override
 	public double getStoppageTime() { return 0.0; }
+
+	@Override
+	public int getStops() { return 0; }
 	
 	@Override
 	public void onTrajectoryEnvelopeUpdate(TrajectoryEnvelope te) { }

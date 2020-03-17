@@ -44,6 +44,7 @@ import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.util.AffineTransformation;
 
 import se.oru.coordination.coordination_oru.motionplanning.AbstractMotionPlanner;
+import se.oru.coordination.coordination_oru.util.ColorPrint;
 import se.oru.coordination.coordination_oru.util.FleetVisualization;
 import se.oru.coordination.coordination_oru.util.StringUtils;
 import se.oru.coordination.coordination_oru.util.Pair;
@@ -625,6 +626,10 @@ public abstract class TrajectoryEnvelopeCoordinator {
 
 	public double getRobotStoppageTime(int robotID) {
 		return trackers.get(robotID).getStoppageTime();
+	}
+
+	public int getRobotStops(int robotID) {
+		return trackers.get(robotID).getStops();
 	}
 
 	public double getTotalStoppageTime() {
@@ -1224,6 +1229,9 @@ public abstract class TrajectoryEnvelopeCoordinator {
 						(this.isUncontrollable(cs.getTe1().getRobotID()) && this.isUncontrollable(cs.getTe2().getRobotID()))) {
 					toRemove.add(cs);
 					metaCSPLogger.finest("Obsolete critical section\n\t" + cs);
+					if(this.isUncontrollable(cs.getTe1().getRobotID()) && this.isUncontrollable(cs.getTe2().getRobotID())) {
+						ColorPrint.positive("Removing obsolete critical section between two pedestrians\n");
+					}
 					continue;
 				}
 

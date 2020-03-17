@@ -32,6 +32,7 @@ public class TrajectoryEnvelopeTrackerPedestrian extends AbstractTrajectoryEnvel
 	protected double currentSpeed;
 
 	protected double stoppageTime = 0.0;
+	protected int stops = 0;
 	protected double positionToStop = -1.0;
 
 	protected PedestrianTrajectory pedestrianTraj;
@@ -142,6 +143,9 @@ public class TrajectoryEnvelopeTrackerPedestrian extends AbstractTrajectoryEnvel
 		return stoppageTime;
 	}
 
+	@Override
+	public int getStops() { return stops; }
+
 	public void delayIntegrationThread(int maxDelayInmillis) {
 		this.maxDelayInMilis = maxDelayInmillis;
 	}
@@ -217,6 +221,7 @@ public class TrajectoryEnvelopeTrackerPedestrian extends AbstractTrajectoryEnvel
 			if (!skipIntegration) {
 				if (atCP) {
 					metaCSPLogger.info("Resuming from critical point (" + te.getComponent() + ")");
+					stops = stops + 1;
 					atCP = false;
 				}
 				boolean stopping = false;
@@ -248,7 +253,7 @@ public class TrajectoryEnvelopeTrackerPedestrian extends AbstractTrajectoryEnvel
 			try { Thread.sleep(trackingPeriodInMillis); }
 			catch (InterruptedException e) { e.printStackTrace(); }
 		}
-		metaCSPLogger.info("RK4 tracking thread terminates (Robot " + myRobotID + ", TrajectoryEnvelope " + myTEID + ")");
+		metaCSPLogger.info("Pedestrian tracking thread terminates (Robot " + myRobotID + ", TrajectoryEnvelope " + myTEID + ")");
 	}
 
 	@Override

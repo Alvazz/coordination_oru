@@ -171,6 +171,12 @@ public abstract class AbstractTrajectoryEnvelopeTracker {
 	 */
 	public abstract double getStoppageTime();
 
+	/**
+	 * This method should return total stops for a robot.
+	 * @return Number of total stops for a robot during its mission.
+	 */
+	public abstract int getStops();
+
 	protected void onPositionUpdate() {
 	
 		// Create an ArrayList. 

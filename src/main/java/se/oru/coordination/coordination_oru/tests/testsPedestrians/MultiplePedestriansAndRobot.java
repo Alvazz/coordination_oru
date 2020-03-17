@@ -1,7 +1,9 @@
 package se.oru.coordination.coordination_oru.tests.testsPedestrians;
 
 import java.io.File;
+import java.io.FileWriter;
 import java.io.FilenameFilter;
+import java.io.IOException;
 import java.util.*;
 
 import org.metacsp.multi.spatioTemporal.paths.PoseSteering;
@@ -30,6 +32,7 @@ public class MultiplePedestriansAndRobot {
 
         double MAX_ACCEL = 1.0;
         double MAX_VEL = 1.0;
+        String pathFileName = new String("OnlyPedestrians");
 
         final double threshold = 2.0;
 
@@ -117,14 +120,14 @@ public class MultiplePedestriansAndRobot {
         }
 
         // Add robot
-        nums.add(1729);
+        // nums.add(1729);
 
         //JTSDrawingPanelVisualization viz = new JTSDrawingPanelVisualization();
         RVizVisualization viz = new RVizVisualization();
         viz.setMap("maps/atc.yaml");
         int[] nums_primitive = new int[nums.size()];
         for (int i = 0; i < nums_primitive.length; i++) {
-            nums_primitive[i] = nums.get(i).intValue();
+            nums_primitive[i] = nums.get(i);
         }
         RVizVisualization.writeRVizConfigFile(nums_primitive);
         //BrowserVisualization viz = new BrowserVisualization();
@@ -147,58 +150,61 @@ public class MultiplePedestriansAndRobot {
             } else {
                 tec.setFootprint(nums.get(i), f1, f2, f3, f4);
                 tec.setForwardModel(nums.get(i), new ConstantAccelerationForwardModel(MAX_ACCEL, MAX_VEL, tec.getTrackingPeriod(), tec.getTemporalResolution()));
-                PoseSteering[] robotPath = Missions.loadPathFromFile(pedestrianPathDir + "/CLiFF-map_noup_0.path");
+                PoseSteering[] robotPath = Missions.loadPathFromFile(pedestrianPathDir + "/" + pathFileName + ".path");
                 tec.placeRobot(nums.get(i), robotPath[0].getPose());
                 Mission m1 = new Mission(nums.get(i), robotPath);
                 tec.addMissions(m1);
             }
-            
-            // Add a tracking callback for each ID
+
             final int finalI = i;
+            // Add a tracking callback for each ID
             tec.addTrackingCallback(nums.get(i), new TrackingCallback() {
-				
-				@Override
-				public void onTrackingStart() {
-					// TODO Auto-generated method stub
-				}
-				
-				@Override
-				public void onTrackingFinished() {
-					// TODO Auto-generated method stub
-					ColorPrint.positive("Waiting time for robot " + nums.get(finalI) + ": " + tec.getRobotStoppageTime(nums.get(finalI)));
-					
-					//FPA
-					System.out.println("Does Robot" + nums.get(finalI) + " have more missions? " + Missions.hasMissions(nums.get(finalI)));
-				}
-				
-				@Override
-				public String[] onPositionUpdate() {
-					// TODO Auto-generated method stub
-					
-					//FPA
-					//System.out.println("There are now " + tec.getCurrentCriticalSections().size() + " critical sections");
-					
-					return null;
-				}
-				
-				@Override
-				public void onNewGroundEnvelope() {
-					// TODO Auto-generated method stub
-					
-				}
-				
-				@Override
-				public void beforeTrackingStart() {
-					// TODO Auto-generated method stub
-					
-				}
-				
-				@Override
-				public void beforeTrackingFinished() {
-					// TODO Auto-generated method stub
-					
-				}
-			});
+
+                @Override
+                public void onTrackingStart() {
+                    // TODO Auto-generated method stub
+                }
+
+                @Override
+                public void onTrackingFinished() {
+
+                    ColorPrint.positive("Waiting time for robot " + nums.get(finalI) + ": " + tec.getRobotStoppageTime(nums.get(finalI)));
+
+                    //FPA
+                    System.out.println("Does Robot" + nums.get(finalI) + " have more missions? " + Missions.hasMissions(nums.get(finalI)));
+                    MyTrackingCallback.writeToLogFile(String.valueOf(nums.get(finalI)) + ", " + tec.getRobotStoppageTime(nums.get(finalI)) + ", " + tec.getRobotStops(nums.get(finalI)) + "\n", pathFileName + "_waiting_times.txt");
+
+                }
+
+                @Override
+                public String[] onPositionUpdate() {
+                    int currentCriticalSections = tec.getCurrentCriticalSections().size();
+                    if(currentCriticalSections != MyTrackingCallback.criticalSections) {
+                        MyTrackingCallback.criticalSections = currentCriticalSections;
+                        MyTrackingCallback.writeToLogFile(String.valueOf(MyTrackingCallback.criticalSections) + "\n", pathFileName + "_critical_sections.txt");
+                    }
+
+                    return null;
+                }
+
+                @Override
+                public void onNewGroundEnvelope() {
+                    // TODO Auto-generated method stub
+
+                }
+
+                @Override
+                public void beforeTrackingStart() {
+                    // TODO Auto-generated method stub
+
+                }
+
+                @Override
+                public void beforeTrackingFinished() {
+                    // TODO Auto-generated method stub
+
+                }
+            });
 
             Thread.sleep(200);
         }

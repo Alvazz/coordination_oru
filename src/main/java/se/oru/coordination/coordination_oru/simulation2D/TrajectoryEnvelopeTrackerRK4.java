@@ -28,6 +28,7 @@ public abstract class TrajectoryEnvelopeTrackerRK4 extends AbstractTrajectoryEnv
 	protected double positionToSlowDown = -1.0;
 	protected double elapsedTrackingTime = 0.0;
 	protected double stoppageTime = 0.0;
+	protected int stops = 0;
 	private Thread th = null;
 	protected State state = null;
 	protected double[] curvatureDampening = null;
@@ -42,6 +43,9 @@ public abstract class TrajectoryEnvelopeTrackerRK4 extends AbstractTrajectoryEnv
 
 	@Override
 	public double getStoppageTime() { return stoppageTime; }
+
+	@Override
+	public int getStops() { return stops; }
 
 	public void setUseInternalCriticalPoints(boolean value) {
 		this.useInternalCPs = value;
@@ -389,6 +393,7 @@ public abstract class TrajectoryEnvelopeTrackerRK4 extends AbstractTrajectoryEnv
 			if (!skipIntegration) {
 				if (atCP) {
 					metaCSPLogger.info("Resuming from critical point (" + te.getComponent() + ")");
+					stops = stops + 1;
 					atCP = false;
 				}
 				slowingDown = false;
