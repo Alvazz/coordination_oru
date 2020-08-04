@@ -17,9 +17,7 @@ import se.oru.coordination.coordination_oru.RobotAtCriticalSection;
 import se.oru.coordination.coordination_oru.RobotReport;
 import se.oru.coordination.coordination_oru.TrackingCallback;
 import se.oru.coordination.coordination_oru.demo.DemoDescription;
-import se.oru.coordination.coordination_oru.simulation2D.PedestrianForwardModel;
-import se.oru.coordination.coordination_oru.simulation2D.PedestrianTrajectory;
-import se.oru.coordination.coordination_oru.simulation2D.TrajectoryEnvelopeCoordinatorSimulationWithPedestrians;
+import se.oru.coordination.coordination_oru.simulation2D.*;
 import se.oru.coordination.coordination_oru.util.ColorPrint;
 import se.oru.coordination.coordination_oru.util.JTSDrawingPanelVisualization;
 import se.oru.coordination.coordination_oru.util.Missions;
@@ -32,9 +30,11 @@ public class MultiplePedestriansAndRobot {
 
         double MAX_ACCEL = 1.0;
         double MAX_VEL = 1.0;
-        String pathFileName = "CLiFF-map__upstream_14";
+        String pathFileName = "RRTStar_noup_0";
+        String pedestrianPathDir = "atc_testing_1114_1352866100";
+        String robotPathDir = "chitt_tests/big_scenario_1352866100_20min";
 
-        final double threshold = 2.0;
+        final double threshold = 5.0;
 
         //Instantiate a trajectory envelope coordinator.
         //The TrajectoryEnvelopeCoordinatorSimulation implementation provides
@@ -50,20 +50,16 @@ public class MultiplePedestriansAndRobot {
                 RobotReport robotReport1 = o1.getTrajectoryEnvelopeTracker().getRobotReport();
                 RobotReport robotReport2 = o2.getTrajectoryEnvelopeTracker().getRobotReport();
 
-                if((cs.getTe1Start() - robotReport1.getPathIndex()) < threshold && (cs.getTe2Start() - robotReport2.getPathIndex()) < threshold) {
+                if(tec.isUncontrollable(o2.getTrajectoryEnvelopeTracker().getTrajectoryEnvelope().getRobotID())) {
+                    double o2DistToCP = ((TrajectoryEnvelopeTrackerPedestrian) o2.getTrajectoryEnvelopeTracker()).computeDistance(robotReport2.getPathIndex(), cs.getTe2Start());
+                    if(o2DistToCP < threshold) returnValue = 1;
+                    else returnValue = ((cs.getTe1Start() - robotReport1.getPathIndex()) - (cs.getTe2Start() - robotReport2.getPathIndex()));
+                }
 
-                    // If o2 is Human, he passes first.
-                    if (tec.isUncontrollable(o2.getTrajectoryEnvelopeTracker().getTrajectoryEnvelope().getRobotID())) {
-                        returnValue = 1;
-                    }
-
-                    // If o1 is Human, he passes first.
-                    else if (tec.isUncontrollable(o1.getTrajectoryEnvelopeTracker().getTrajectoryEnvelope().getRobotID())) {
-                        returnValue = -1;
-                    }
-
-                    else
-                        returnValue = ((cs.getTe1Start() - robotReport1.getPathIndex()) - (cs.getTe2Start() - robotReport2.getPathIndex()));
+                else if (tec.isUncontrollable(o1.getTrajectoryEnvelopeTracker().getTrajectoryEnvelope().getRobotID())) {
+                    double o1DistToCP = ((TrajectoryEnvelopeTrackerPedestrian) o1.getTrajectoryEnvelopeTracker()).computeDistance(robotReport1.getPathIndex(), cs.getTe1Start());
+                    if(o1DistToCP < threshold) returnValue = -1;
+                    else returnValue = ((cs.getTe1Start() - robotReport1.getPathIndex()) - (cs.getTe2Start() - robotReport2.getPathIndex()));
                 }
 
                 // If both are robots. We don't need it now, but for the sake of future prosperity...
@@ -105,7 +101,6 @@ public class MultiplePedestriansAndRobot {
         tec.setupSolver(0, 100000000);
 
         final ArrayList<Integer> nums = new ArrayList<Integer>();
-        String pedestrianPathDir = "atc-1";
         // Filter names
         FilenameFilter matchingNameFilter = new FilenameFilter() {
             @Override
@@ -129,7 +124,7 @@ public class MultiplePedestriansAndRobot {
         for (int i = 0; i < nums_primitive.length; i++) {
             nums_primitive[i] = nums.get(i);
         }
-        RVizVisualization.writeRVizConfigFile(nums_primitive);
+        //RVizVisualization.writeRVizConfigFile(nums_primitive);
         //BrowserVisualization viz = new BrowserVisualization();
         //viz.setInitialTransform(39, -1.8, 1.4);
         tec.setVisualization(viz);
@@ -150,7 +145,7 @@ public class MultiplePedestriansAndRobot {
             } else {
                 tec.setFootprint(nums.get(i), f1, f2, f3, f4);
                 tec.setForwardModel(nums.get(i), new ConstantAccelerationForwardModel(MAX_ACCEL, MAX_VEL, tec.getTrackingPeriod(), tec.getTemporalResolution()));
-                PoseSteering[] robotPath = Missions.loadPathFromFile(pedestrianPathDir + "/" + pathFileName + ".path");
+                PoseSteering[] robotPath = Missions.loadPathFromFile(robotPathDir + "/" + pathFileName + ".path");
                 tec.placeRobot(nums.get(i), robotPath[0].getPose());
                 Mission m1 = new Mission(nums.get(i), robotPath);
                 tec.addMissions(m1);
@@ -210,6 +205,7 @@ public class MultiplePedestriansAndRobot {
         }
 
         tec.computeCriticalSections();
+        Thread.sleep(10000);
         tec.startTrackingAddedMissions();
     }
     

@@ -73,7 +73,7 @@ public class TrajectoryEnvelopeCoordinatorSimulationWithPedestrians extends Traj
 	 * </ul>
 	 */
 	public TrajectoryEnvelopeCoordinatorSimulationWithPedestrians(double MAX_VELOCITY, double MAX_ACCELERATION) {
-		this(1000, 1000, MAX_VELOCITY, MAX_ACCELERATION, 30);
+		this(100, 1000, MAX_VELOCITY, MAX_ACCELERATION, 30);
 	}
 
 	/**

@@ -81,7 +81,8 @@ public class TrajectoryEnvelopeTrackerPedestrian extends AbstractTrajectoryEnvel
 		return ret;
 	}
 
-	private double computeDistance(int startIndex, int endIndex) {
+	public double computeDistance(int startIndex, int endIndex) {
+		if(startIndex == -1) startIndex = 0;
 		return computeDistance(this.traj, startIndex, endIndex);
 	}
 
