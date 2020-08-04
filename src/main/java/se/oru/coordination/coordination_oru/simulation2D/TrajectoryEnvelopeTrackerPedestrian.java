@@ -188,7 +188,7 @@ public class TrajectoryEnvelopeTrackerPedestrian extends AbstractTrajectoryEnvel
 
 	@Override
 	public void run() {
-		this.elapsedTrackingTime = 0.0;
+		this.elapsedTrackingTime = this.pedestrianTraj.getTimeStamp(0);
 		double deltaTime = 0.0;
 		boolean atCP = false;
 		int myRobotID = te.getRobotID();

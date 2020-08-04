@@ -31,7 +31,7 @@ public class MultiplePedestriansAndRobot {
         double MAX_ACCEL = 1.0;
         double MAX_VEL = 1.0;
         String pathFileName = "RRTStar_noup_0";
-        String pedestrianPathDir = "atc_testing_1114_1352866100";
+        String pedestrianPathDir = "chitt_tests/pedestrians_atc_testing_1114_1352866100";
         String robotPathDir = "chitt_tests/big_scenario_1352866100_20min";
 
         final double threshold = 5.0;
@@ -124,7 +124,7 @@ public class MultiplePedestriansAndRobot {
         for (int i = 0; i < nums_primitive.length; i++) {
             nums_primitive[i] = nums.get(i);
         }
-        //RVizVisualization.writeRVizConfigFile(nums_primitive);
+        RVizVisualization.writeRVizConfigFile(nums_primitive);
         //BrowserVisualization viz = new BrowserVisualization();
         //viz.setInitialTransform(39, -1.8, 1.4);
         tec.setVisualization(viz);
@@ -141,11 +141,12 @@ public class MultiplePedestriansAndRobot {
                 tec.addPedestrianTrajectory(nums.get(i), p1);
                 tec.placeRobot(nums.get(i), p1.getPose(0));
                 Mission m1 = new Mission(nums.get(i), p1.getPoseSteeringAsArray());
+                ColorPrint.info("Adding mission for Robot " + nums.get(i));
                 tec.addMissions(m1);
             } else {
                 tec.setFootprint(nums.get(i), f1, f2, f3, f4);
                 tec.setForwardModel(nums.get(i), new ConstantAccelerationForwardModel(MAX_ACCEL, MAX_VEL, tec.getTrackingPeriod(), tec.getTemporalResolution()));
-                PoseSteering[] robotPath = Missions.loadPathFromFile(robotPathDir + "/" + pathFileName + ".path");
+                PoseSteering[] robotPath = Missions.loadPathFromFile(robotPathDir + "/savedPaths/" + pathFileName + ".path");
                 tec.placeRobot(nums.get(i), robotPath[0].getPose());
                 Mission m1 = new Mission(nums.get(i), robotPath);
                 tec.addMissions(m1);
