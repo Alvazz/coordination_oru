@@ -32,7 +32,7 @@ public class MultiplePedestriansAndRobot {
         double MAX_VEL = 1.0;
         String pathFileName = "RRTStar_noup_0";
         String pedestrianPathDir = "chitt_tests/pedestrians_atc_testing_1114_1352866100";
-        String robotPathDir = "chitt_tests/big_scenario_1352866100_20min";
+        String robotPathDir = "chitt_tests/LongPathNew/T1_1352866100";
 
         final double threshold = 5.0;
 
@@ -128,86 +128,106 @@ public class MultiplePedestriansAndRobot {
         //BrowserVisualization viz = new BrowserVisualization();
         //viz.setInitialTransform(39, -1.8, 1.4);
         tec.setVisualization(viz);
+
+        PedestrianTrajectory[] pedestrianTrajectories = new PedestrianTrajectory[nums_primitive.length];
+        long startTime = 0;
         
         for (int i = 0; i < nums.size(); i++) {
 
             // One robot. Others behave as pedestrians.
             if (nums.get(i) != 1729) {
-                tec.setFootprint(nums.get(i), pedestrianFootprint);
-                tec.addUncontrollableRobots(nums.get(i));
-                tec.setForwardModel(nums.get(i), new PedestrianForwardModel());
-
-                PedestrianTrajectory p1 = new PedestrianTrajectory(pedestrianPathDir + "/person" + nums.get(i) + ".txt");
-                tec.addPedestrianTrajectory(nums.get(i), p1);
-                tec.placeRobot(nums.get(i), p1.getPose(0));
-                Mission m1 = new Mission(nums.get(i), p1.getPoseSteeringAsArray());
-                ColorPrint.info("Adding mission for Robot " + nums.get(i));
-                tec.addMissions(m1);
+                pedestrianTrajectories[i] = new PedestrianTrajectory(pedestrianPathDir + "/person" + nums.get(i) + ".txt");
             } else {
                 tec.setFootprint(nums.get(i), f1, f2, f3, f4);
                 tec.setForwardModel(nums.get(i), new ConstantAccelerationForwardModel(MAX_ACCEL, MAX_VEL, tec.getTrackingPeriod(), tec.getTemporalResolution()));
-                PoseSteering[] robotPath = Missions.loadPathFromFile(robotPathDir + "/savedPaths/" + pathFileName + ".path");
+                PoseSteering[] robotPath = Missions.loadPathFromFile(robotPathDir + "/" + pathFileName + ".path");
                 tec.placeRobot(nums.get(i), robotPath[0].getPose());
                 Mission m1 = new Mission(nums.get(i), robotPath);
                 tec.addMissions(m1);
+                tec.computeCriticalSections();
+                Thread.sleep(5000);
+                tec.startTrackingAddedMissions();
+                startTime = tec.getCurrentTimeInMillis();
             }
-
-            final int finalI = i;
-            // Add a tracking callback for each ID
-            tec.addTrackingCallback(nums.get(i), new TrackingCallback() {
-
-                @Override
-                public void onTrackingStart() {
-                    // TODO Auto-generated method stub
-                }
-
-                @Override
-                public void onTrackingFinished() {
-
-                    ColorPrint.positive("Waiting time for robot " + nums.get(finalI) + ": " + tec.getRobotStoppageTime(nums.get(finalI)));
-
-                    //FPA
-                    System.out.println("Does Robot" + nums.get(finalI) + " have more missions? " + Missions.hasMissions(nums.get(finalI)));
-                    MyTrackingCallback.writeToLogFile(String.valueOf(nums.get(finalI)) + ", " + tec.getRobotStoppageTime(nums.get(finalI)) + ", " + tec.getRobotStops(nums.get(finalI)) + "\n", pathFileName + "_waiting_times.txt");
-
-                }
-
-                @Override
-                public String[] onPositionUpdate() {
-                    int currentCriticalSections = tec.getCurrentCriticalSections().size();
-                    if(currentCriticalSections != MyTrackingCallback.criticalSections) {
-                        MyTrackingCallback.criticalSections = currentCriticalSections;
-                        MyTrackingCallback.writeToLogFile(String.valueOf(MyTrackingCallback.criticalSections) + "\n", pathFileName + "_critical_sections.txt");
-                    }
-
-                    return null;
-                }
-
-                @Override
-                public void onNewGroundEnvelope() {
-                    // TODO Auto-generated method stub
-
-                }
-
-                @Override
-                public void beforeTrackingStart() {
-                    // TODO Auto-generated method stub
-
-                }
-
-                @Override
-                public void beforeTrackingFinished() {
-                    // TODO Auto-generated method stub
-
-                }
-            });
-
-            Thread.sleep(200);
         }
 
-        tec.computeCriticalSections();
-        Thread.sleep(10000);
-        tec.startTrackingAddedMissions();
+        int added_missions = 0;
+
+        while(added_missions != nums_primitive.length) {
+            long timeNow = tec.getCurrentTimeInMillis();
+
+            for (int i = 0; i < nums.size(); i++) {
+                PedestrianTrajectory pI = pedestrianTrajectories[i];
+                // One robot. Others behave as pedestrians.
+                // When the current time is greater than the start time of a pedestrian, we start that pedestrian
+                if (nums.get(i) != 1729 && timeNow > startTime + pI.getTimeStamps().get(0) ) {
+                    tec.setFootprint(nums.get(i), pedestrianFootprint);
+                    tec.addUncontrollableRobots(nums.get(i));
+                    tec.setForwardModel(nums.get(i), new PedestrianForwardModel());
+
+                    tec.addPedestrianTrajectory(nums.get(i), pI);
+                    tec.placeRobot(nums.get(i), pI.getPose(0));
+                    Mission m1 = new Mission(nums.get(i), pI.getPoseSteeringAsArray());
+                    ColorPrint.info("Adding mission for Robot " + nums.get(i));
+                    tec.addMissions(m1);
+                }
+
+                final int finalI = i;
+                // Add a tracking callback for each ID
+                tec.addTrackingCallback(nums.get(i), new TrackingCallback() {
+
+                    @Override
+                    public void onTrackingStart() {
+                        // TODO Auto-generated method stub
+                    }
+
+                    @Override
+                    public void onTrackingFinished() {
+
+                        ColorPrint.positive("Waiting time for robot " + nums.get(finalI) + ": " + tec.getRobotStoppageTime(nums.get(finalI)));
+
+                        //FPA
+                        System.out.println("Does Robot" + nums.get(finalI) + " have more missions? " + Missions.hasMissions(nums.get(finalI)));
+                        MyTrackingCallback.writeToLogFile(String.valueOf(nums.get(finalI)) + ", " + tec.getRobotStoppageTime(nums.get(finalI)) + ", " + tec.getRobotStops(nums.get(finalI)) + "\n", pathFileName + "_waiting_times.txt");
+
+                    }
+
+                    @Override
+                    public String[] onPositionUpdate() {
+                        int currentCriticalSections = tec.getCurrentCriticalSections().size();
+                        if (currentCriticalSections != MyTrackingCallback.criticalSections) {
+                            MyTrackingCallback.criticalSections = currentCriticalSections;
+                            MyTrackingCallback.writeToLogFile(String.valueOf(MyTrackingCallback.criticalSections) + "\n", pathFileName + "_critical_sections.txt");
+                        }
+
+                        return null;
+                    }
+
+                    @Override
+                    public void onNewGroundEnvelope() {
+                        // TODO Auto-generated method stub
+
+                    }
+
+                    @Override
+                    public void beforeTrackingStart() {
+                        // TODO Auto-generated method stub
+
+                    }
+
+                    @Override
+                    public void beforeTrackingFinished() {
+                        // TODO Auto-generated method stub
+
+                    }
+                });
+
+                Thread.sleep(100);
+            }
+
+            tec.computeCriticalSections();
+            tec.startTrackingAddedMissions();
+        }
     }
     
 }
