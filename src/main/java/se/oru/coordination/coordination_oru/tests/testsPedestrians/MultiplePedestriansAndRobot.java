@@ -1,5 +1,6 @@
 package se.oru.coordination.coordination_oru.tests.testsPedestrians;
 
+import java.awt.*;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.FilenameFilter;
@@ -18,10 +19,7 @@ import se.oru.coordination.coordination_oru.RobotReport;
 import se.oru.coordination.coordination_oru.TrackingCallback;
 import se.oru.coordination.coordination_oru.demo.DemoDescription;
 import se.oru.coordination.coordination_oru.simulation2D.*;
-import se.oru.coordination.coordination_oru.util.ColorPrint;
-import se.oru.coordination.coordination_oru.util.JTSDrawingPanelVisualization;
-import se.oru.coordination.coordination_oru.util.Missions;
-import se.oru.coordination.coordination_oru.util.RVizVisualization;
+import se.oru.coordination.coordination_oru.util.*;
 
 @DemoDescription(desc = "One-shot navigation of several pedestrians and a robot coordinating on static paths that overlap in a straight portion.")
 public class MultiplePedestriansAndRobot {
@@ -30,9 +28,27 @@ public class MultiplePedestriansAndRobot {
 
         double MAX_ACCEL = 1.0;
         double MAX_VEL = 1.0;
-        String pathFileName = "RRTStar_noup_0";
+
+        String scenarioName = "LongPathNew/T1_1352866100";
+        String robotPathDir = "chitt_tests/" + scenarioName;
+        Vector<String> robotPathFilesName = new Vector<String>();
+
+        FilenameFilter matchingRobotPathNameFilter = new FilenameFilter() {
+            @Override
+            public boolean accept(File file, String name) {
+                return name.contains(".path");
+            }
+        };
+
+        File robotDir = new File(robotPathDir);
+        for (final File f : robotDir.listFiles(matchingRobotPathNameFilter)) {
+            robotPathFilesName.add(f.getName().split(".path")[0]);
+        }
+
+        String pathFileName = robotPathFilesName.get(5);
         String pedestrianPathDir = "chitt_tests/pedestrians_atc_testing_1114_1352866100";
-        String robotPathDir = "chitt_tests/LongPathNew/T1_1352866100";
+
+        ColorPrint.positive("RUNNING TEST FOR: " + pathFileName);
 
         final double threshold = 5.0;
 
@@ -118,16 +134,19 @@ public class MultiplePedestriansAndRobot {
         nums.add(1729);
 
         //JTSDrawingPanelVisualization viz = new JTSDrawingPanelVisualization();
-        RVizVisualization viz = new RVizVisualization();
+        BrowserVisualization viz = new BrowserVisualization();
+        //RVizVisualization viz = new RVizVisualization();
         viz.setMap("maps/atc.yaml");
         int[] nums_primitive = new int[nums.size()];
         for (int i = 0; i < nums_primitive.length; i++) {
             nums_primitive[i] = nums.get(i);
         }
-        RVizVisualization.writeRVizConfigFile(nums_primitive);
-        //BrowserVisualization viz = new BrowserVisualization();
-        //viz.setInitialTransform(39, -1.8, 1.4);
+        //RVizVisualization.writeRVizConfigFile(nums_primitive);
+
+        viz.setInitialTransform(40, -10, 30);
         tec.setVisualization(viz);
+
+        ArrayList<Integer> addedMissions = new ArrayList<Integer>();
 
         PedestrianTrajectory[] pedestrianTrajectories = new PedestrianTrajectory[nums_primitive.length];
         long startTime = 0;
@@ -144,23 +163,25 @@ public class MultiplePedestriansAndRobot {
                 tec.placeRobot(nums.get(i), robotPath[0].getPose());
                 Mission m1 = new Mission(nums.get(i), robotPath);
                 tec.addMissions(m1);
+                addedMissions.add(1729);
                 tec.computeCriticalSections();
                 Thread.sleep(5000);
                 tec.startTrackingAddedMissions();
-                startTime = tec.getCurrentTimeInMillis();
             }
         }
 
-        int added_missions = 0;
+        startTime = tec.getCurrentTimeInMillis();
 
-        while(added_missions != nums_primitive.length) {
+        while(addedMissions.size() != nums_primitive.length) {
             long timeNow = tec.getCurrentTimeInMillis();
 
             for (int i = 0; i < nums.size(); i++) {
+                if(addedMissions.contains(i))
+                    continue;
                 PedestrianTrajectory pI = pedestrianTrajectories[i];
                 // One robot. Others behave as pedestrians.
                 // When the current time is greater than the start time of a pedestrian, we start that pedestrian
-                if (nums.get(i) != 1729 && timeNow > startTime + pI.getTimeStamps().get(0) ) {
+                if (nums.get(i) != 1729 && timeNow > startTime + pI.getStartTime()*1000 ) {
                     tec.setFootprint(nums.get(i), pedestrianFootprint);
                     tec.addUncontrollableRobots(nums.get(i));
                     tec.setForwardModel(nums.get(i), new PedestrianForwardModel());
@@ -169,7 +190,9 @@ public class MultiplePedestriansAndRobot {
                     tec.placeRobot(nums.get(i), pI.getPose(0));
                     Mission m1 = new Mission(nums.get(i), pI.getPoseSteeringAsArray());
                     ColorPrint.info("Adding mission for Robot " + nums.get(i));
+                    ColorPrint.info("timeNow: " + timeNow + ", startTime: " + startTime + ", first stamp: " + pI.getTimeStamps().get(0)*1000);
                     tec.addMissions(m1);
+                    addedMissions.add(i);
                 }
 
                 final int finalI = i;
@@ -188,7 +211,7 @@ public class MultiplePedestriansAndRobot {
 
                         //FPA
                         System.out.println("Does Robot" + nums.get(finalI) + " have more missions? " + Missions.hasMissions(nums.get(finalI)));
-                        MyTrackingCallback.writeToLogFile(String.valueOf(nums.get(finalI)) + ", " + tec.getRobotStoppageTime(nums.get(finalI)) + ", " + tec.getRobotStops(nums.get(finalI)) + "\n", pathFileName + "_waiting_times.txt");
+                        MyTrackingCallback.writeToLogFile(String.valueOf(nums.get(finalI)) + ", " + tec.getRobotStoppageTime(nums.get(finalI)) + ", " + tec.getRobotStops(nums.get(finalI)) + "\n", scenarioName + "/" + pathFileName + "_waiting_times.txt");
 
                     }
 
@@ -197,7 +220,7 @@ public class MultiplePedestriansAndRobot {
                         int currentCriticalSections = tec.getCurrentCriticalSections().size();
                         if (currentCriticalSections != MyTrackingCallback.criticalSections) {
                             MyTrackingCallback.criticalSections = currentCriticalSections;
-                            MyTrackingCallback.writeToLogFile(String.valueOf(MyTrackingCallback.criticalSections) + "\n", pathFileName + "_critical_sections.txt");
+                            MyTrackingCallback.writeToLogFile(String.valueOf(MyTrackingCallback.criticalSections) + "\n", scenarioName + "/" + pathFileName + "_critical_sections.txt");
                         }
 
                         return null;
@@ -221,13 +244,12 @@ public class MultiplePedestriansAndRobot {
 
                     }
                 });
-
-                Thread.sleep(100);
             }
-
+            Thread.sleep(100);
             tec.computeCriticalSections();
             tec.startTrackingAddedMissions();
         }
+        ColorPrint.info("All pedestrians added.");
     }
     
 }

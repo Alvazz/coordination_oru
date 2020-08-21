@@ -20,7 +20,11 @@ public class PedestrianTrajectory {
     private ArrayList<Double> us = null;
     private ArrayList<Double> vs = null;
 
+    private double startTime = 0.0;
+
     protected int size = 0;
+
+    public double getStartTime() {return startTime; }
 
     public ArrayList<Pose> getPoses() {
         return poses;
@@ -163,6 +167,12 @@ public class PedestrianTrajectory {
 
             }
             in.close();
+
+            startTime = timeStamps.get(0);
+
+            for(int i = 0; i < timeStamps.size(); i++) {
+                timeStamps.set(i, timeStamps.get(i) - timeStamps.get(0));
+            }
 
             if (check(poses, speeds, timeStamps)) {
                 size = poses.size();

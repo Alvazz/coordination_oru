@@ -167,7 +167,9 @@ public class TrajectoryEnvelopeTrackerPedestrian extends AbstractTrajectoryEnvel
 			if(index == pedestrianTraj.size()) break;
 		}
 
-		index = index - 1;
+		if(index != 0) {
+			index = index - 1;
+		}
 
 		this.currentPathIndex = index;
 		this.currentSpeed = this.pedestrianTraj.getSpeed(index);
@@ -260,7 +262,6 @@ public class TrajectoryEnvelopeTrackerPedestrian extends AbstractTrajectoryEnvel
 	@Override
 	public long getCurrentTimeInMillis() {
 		return this.tec.getCurrentTimeInMillis();
-		//return Calendar.getInstance().getTimeInMillis();
 	}
 
 }
