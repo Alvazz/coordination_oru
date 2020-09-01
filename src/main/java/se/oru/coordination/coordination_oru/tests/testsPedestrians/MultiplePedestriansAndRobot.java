@@ -45,7 +45,23 @@ public class MultiplePedestriansAndRobot {
             robotPathFilesName.add(f.getName().split(".path")[0]);
         }
 
-        String pathFileName = robotPathFilesName.get(5);
+        ColorPrint.info("un-sorted values: " + robotPathFilesName.toString());
+
+        robotPathFilesName.sort(new Comparator<String>() {
+            @Override
+            public int compare(String s, String t1) {
+                //ColorPrint.warning(s + ", " + s.lastIndexOf("_") + ", " + s.length() + ", " + s.substring(s.lastIndexOf("_")+1, s.length()-1));
+                Integer s_num = Integer.parseInt(s.substring(s.lastIndexOf("_")+1));
+                Integer t_num = Integer.parseInt(t1.substring(t1.lastIndexOf("_")+1));
+                if(t_num > s_num) return 1;
+                else if (s_num > t_num) return -1;
+                else return 0;
+            }
+        });
+
+        ColorPrint.info("Sorted values: " + robotPathFilesName.toString());
+
+        String pathFileName = robotPathFilesName.get(Integer.parseInt(args[0]));
 
         String pedestrianPathDir = "chitt_tests/pedestrians_atc_testing_1114_1352866100";
 
@@ -131,6 +147,10 @@ public class MultiplePedestriansAndRobot {
         File pedestrianDir = new File(pedestrianPathDir);
         for (final File f : pedestrianDir.listFiles(matchingNameFilter)) {
             nums.add(Integer.parseInt(f.getName().split("person")[1].split(".txt")[0]));
+            if(nums.size() == 20) {
+                ColorPrint.info("READ 20 Pedestrians...");
+                break;
+            }
         }
 
         // Add robot
@@ -168,7 +188,6 @@ public class MultiplePedestriansAndRobot {
                 tec.placeRobot(nums.get(i), robotPath[0].getPose());
                 Mission m1 = new Mission(nums.get(i), robotPath);
                 tec.addMissions(m1);
-                addedMissions.add(1729);
                 tec.computeCriticalSections();
                 Thread.sleep(5000);
                 tec.startTrackingAddedMissions();
@@ -181,7 +200,7 @@ public class MultiplePedestriansAndRobot {
             long timeNow = tec.getCurrentTimeInMillis();
 
             for (int i = 0; i < nums.size(); i++) {
-                if (addedMissions.contains(i))
+                if (addedMissions.contains(nums.get(i)))
                     continue;
                 PedestrianTrajectory pI = pedestrianTrajectories[i];
                 // One robot. Others behave as pedestrians.
@@ -197,7 +216,11 @@ public class MultiplePedestriansAndRobot {
                     ColorPrint.info("Adding mission for Robot " + nums.get(i));
                     ColorPrint.info("timeNow: " + timeNow + ", startTime: " + startTime + ", first stamp: " + pI.getTimeStamps().get(0) * 1000);
                     tec.addMissions(m1);
-                    addedMissions.add(i);
+                    addedMissions.add(nums.get(i));
+                }
+
+                if(nums.get(i) == 1729) {
+                    addedMissions.add(1729);
                 }
 
                 final int finalI = i;
@@ -212,29 +235,31 @@ public class MultiplePedestriansAndRobot {
                     @Override
                     public void onTrackingFinished() {
 
-                        ColorPrint.positive("Waiting time for robot " + nums.get(finalI) + ": " + tec.getRobotStoppageTime(nums.get(finalI)));
+                        //ColorPrint.positive("Waiting time for robot " + nums.get(finalI) + ": " + tec.getRobotStoppageTime(nums.get(finalI)));
+                        //System.out.println("Does Robot" + nums.get(finalI) + " have more missions? " + Missions.hasMissions(nums.get(finalI)));
+                        //MyTrackingCallback.writeToLogFile(String.valueOf(nums.get(finalI)) + ", " + tec.getRobotStoppageTime(nums.get(finalI)) + ", " + tec.getRobotStops(nums.get(finalI)) + "\n", scenarioName + "/" + pathFileName + "_waiting_times.txt");
 
-                        if(finalI == 1729) {
-                            RobotReport thisRobotReport = tec.getRobotReport(finalI);
+                        if(nums.get(finalI) == 1729) {
+                            RobotReport thisRobotReport = tec.getRobotReport(nums.get(finalI));
 
                             if(thisRobotReport.getPose().distanceTo(robotPath[robotPath.length-1].getPose()) < 0.01) {
                                 ColorPrint.positive("Ending Experiment: Robot has reached it's destination.");
+                                for(int a = 0; a < nums.size(); a++) {
+                                    MyTrackingCallback.writeToLogFile(String.valueOf(nums.get(a)) + ", " + tec.getRobotStoppageTime(nums.get(a)) + ", " + tec.getRobotStops(nums.get(a)) + "\n", scenarioName + "/" + pathFileName + "_waiting_times.txt");
+                                }
                                 System.exit(0);
                             }
+                            else {
+                                ColorPrint.info("This: " + thisRobotReport.getPose().distanceTo(robotPath[robotPath.length-1].getPose()));
+                            }
                         }
-
-
-
-                        //FPA
-                        System.out.println("Does Robot" + nums.get(finalI) + " have more missions? " + Missions.hasMissions(nums.get(finalI)));
-                        MyTrackingCallback.writeToLogFile(String.valueOf(nums.get(finalI)) + ", " + tec.getRobotStoppageTime(nums.get(finalI)) + ", " + tec.getRobotStops(nums.get(finalI)) + "\n", scenarioName + "/" + pathFileName + "_waiting_times.txt");
 
                     }
 
                     @Override
                     public String[] onPositionUpdate() {
                         int currentCriticalSections = tec.getCurrentCriticalSections().size();
-                        if (finalI ==1729 && currentCriticalSections != MyTrackingCallback.criticalSections) {
+                        if (nums.get(finalI) == 1729 && currentCriticalSections != MyTrackingCallback.criticalSections) {
                             MyTrackingCallback.criticalSections = currentCriticalSections;
                             MyTrackingCallback.writeToLogFile(String.valueOf(MyTrackingCallback.criticalSections) + "\n", scenarioName + "/" + pathFileName + "_critical_sections.txt");
                         }
