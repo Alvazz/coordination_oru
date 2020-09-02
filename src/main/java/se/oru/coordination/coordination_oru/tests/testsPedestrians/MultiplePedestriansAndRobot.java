@@ -53,8 +53,8 @@ public class MultiplePedestriansAndRobot {
                 //ColorPrint.warning(s + ", " + s.lastIndexOf("_") + ", " + s.length() + ", " + s.substring(s.lastIndexOf("_")+1, s.length()-1));
                 Integer s_num = Integer.parseInt(s.substring(s.lastIndexOf("_")+1));
                 Integer t_num = Integer.parseInt(t1.substring(t1.lastIndexOf("_")+1));
-                if(t_num > s_num) return 1;
-                else if (s_num > t_num) return -1;
+                if(t_num < s_num) return 1;
+                else if (s_num < t_num) return -1;
                 else return 0;
             }
         });
@@ -67,7 +67,7 @@ public class MultiplePedestriansAndRobot {
 
         ColorPrint.positive("RUNNING TEST FOR: " + pathFileName);
 
-        final double threshold = 4.0;
+        final double threshold = 2.0;
 
         //Instantiate a trajectory envelope coordinator.
         //The TrajectoryEnvelopeCoordinatorSimulation implementation provides
@@ -225,6 +225,7 @@ public class MultiplePedestriansAndRobot {
 
                 final int finalI = i;
                 // Add a tracking callback for each ID
+                long finalStartTime = startTime;
                 tec.addTrackingCallback(nums.get(i), new TrackingCallback() {
 
                     @Override
@@ -234,10 +235,6 @@ public class MultiplePedestriansAndRobot {
 
                     @Override
                     public void onTrackingFinished() {
-
-                        //ColorPrint.positive("Waiting time for robot " + nums.get(finalI) + ": " + tec.getRobotStoppageTime(nums.get(finalI)));
-                        //System.out.println("Does Robot" + nums.get(finalI) + " have more missions? " + Missions.hasMissions(nums.get(finalI)));
-                        //MyTrackingCallback.writeToLogFile(String.valueOf(nums.get(finalI)) + ", " + tec.getRobotStoppageTime(nums.get(finalI)) + ", " + tec.getRobotStops(nums.get(finalI)) + "\n", scenarioName + "/" + pathFileName + "_waiting_times.txt");
 
                         if(nums.get(finalI) == 1729) {
                             RobotReport thisRobotReport = tec.getRobotReport(nums.get(finalI));
@@ -249,16 +246,18 @@ public class MultiplePedestriansAndRobot {
                                 }
                                 System.exit(0);
                             }
-                            else {
-                                ColorPrint.info("This: " + thisRobotReport.getPose().distanceTo(robotPath[robotPath.length-1].getPose()));
-                            }
                         }
+
+                        //ColorPrint.positive("Waiting time for robot " + nums.get(finalI) + ": " + tec.getRobotStoppageTime(nums.get(finalI)));
+                        //System.out.println("Does Robot" + nums.get(finalI) + " have more missions? " + Missions.hasMissions(nums.get(finalI)));
+                        //MyTrackingCallback.writeToLogFile(String.valueOf(nums.get(finalI)) + ", " + tec.getRobotStoppageTime(nums.get(finalI)) + ", " + tec.getRobotStops(nums.get(finalI)) + "\n", scenarioName + "/" + pathFileName + "_waiting_times.txt");
 
                     }
 
                     @Override
                     public String[] onPositionUpdate() {
                         int currentCriticalSections = tec.getCurrentCriticalSections().size();
+
                         if (nums.get(finalI) == 1729 && currentCriticalSections != MyTrackingCallback.criticalSections) {
                             MyTrackingCallback.criticalSections = currentCriticalSections;
                             MyTrackingCallback.writeToLogFile(String.valueOf(MyTrackingCallback.criticalSections) + "\n", scenarioName + "/" + pathFileName + "_critical_sections.txt");
@@ -282,7 +281,6 @@ public class MultiplePedestriansAndRobot {
                     @Override
                     public void beforeTrackingFinished() {
                         // TODO Auto-generated method stub
-
                     }
                 });
             }
@@ -291,5 +289,13 @@ public class MultiplePedestriansAndRobot {
             tec.startTrackingAddedMissions();
         }
         ColorPrint.info("All pedestrians added.");
+
+        while(true) {
+            Thread.sleep(50);
+            if(tec.getCurrentTimeInMillis() - startTime > 600000) {
+                ColorPrint.positive("Ending Experiment: Time limit exceeded.");
+                System.exit(0);
+            }
+        }
     }
 }
